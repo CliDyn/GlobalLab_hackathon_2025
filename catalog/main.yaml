@@ -1,0 +1,11 @@
+sources:
+  ICCP:
+    args:
+      path: "{{CATALOG_DIR}}/ICCP/main.yaml"
+    description: Output of ICCP experiments
+    driver: yaml_file_cat
+  AWI:
+    args:
+      path: "{{CATALOG_DIR}}/AWI/main.yaml"
+    description: Output of AWI experiments
+    driver: yaml_file_cat

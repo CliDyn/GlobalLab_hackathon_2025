@@ -1,0 +1,11 @@
+sources:
+  atmos_3h:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo1279-DART-1950C_3h.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false

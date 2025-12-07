@@ -1,0 +1,41 @@
+sources:
+  atmos_monthly:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo319-DART-ssp585d-gibbs-charn_remapped_1m.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
+  atmos_daily:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo319-DART-ssp585d-gibbs-charn_atmos_remapped_1d.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
+  atmos_6h:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo319-DART-ssp585d-gibbs-charn_remapped_6h.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
+  atmos_daily_ivt:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo319-DART-ssp585d-gibbs-charn_remapped_1d_ivt.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false

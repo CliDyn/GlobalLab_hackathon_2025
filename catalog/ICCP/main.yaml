@@ -1,0 +1,30 @@
+sources:
+  TCo319-DART-ctl1950d-gibbs-charn:
+    args:
+      path: "{{CATALOG_DIR}}/TCo319-DART-ctl1950d-gibbs-charn/main.yaml"
+    description: Output of TCo319-DART-ctl1950d-gibbs-charn 
+    driver: yaml_file_cat
+    
+  TCo319-DART-hi1950d-gibbs-charn:
+    args:
+      path: "{{CATALOG_DIR}}/TCo319-DART-hi1950d-gibbs-charn/main.yaml"
+    description: Output of TCo319-DART-hi1950d-gibbs-charn
+    driver: yaml_file_cat
+
+  TCo319-DART-ssp585d-gibbs-charn:
+    args:
+      path: "{{CATALOG_DIR}}/TCo319-DART-ssp585d-gibbs-charn/main.yaml"
+    description: Output of TCo319-DART-ssp585d-gibbs-charn
+    driver: yaml_file_cat
+
+  TCO95L91-CORE2-ctl1950d:
+    args:
+      path: "{{CATALOG_DIR}}/TCO95L91-CORE2-ctl1950d/main.yaml"
+    description: Output of TCO95L91-CORE2-ctl1950d
+    driver: yaml_file_cat
+
+  TCO95L91-CORE2-ssp585d:
+    args:
+      path: "{{CATALOG_DIR}}/TCO95L91-CORE2-ssp585d/main.yaml"
+    description: Output of TCO95L91-CORE2-ssp585d
+    driver: yaml_file_cat

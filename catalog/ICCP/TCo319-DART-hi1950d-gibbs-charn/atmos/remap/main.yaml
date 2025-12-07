@@ -1,0 +1,21 @@
+sources:
+  atmos_monthly:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TTCo319-DART-hi1950d-gibbs-charn_remapped_1m.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
+  atmos_daily:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TTCo319-DART-hi1950d-gibbs-charn_remapped_1d.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false

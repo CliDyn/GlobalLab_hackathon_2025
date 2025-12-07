@@ -1,0 +1,11 @@
+sources:
+  atmos_6h:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCO95L91-CORE2-ctl1950d_atmos_remapped_6h.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
