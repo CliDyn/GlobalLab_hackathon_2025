@@ -52,8 +52,7 @@ def encode_value(v):
 def get_time_seconds(nc_path: str, epoch=DEFAULT_EPOCH, time_var: str = "time"):
     with xr.open_dataset(nc_path, decode_times=True) as ds:
         vals = ds[time_var].values
-    # Use int64 to safely represent seconds since epoch even for far-future dates
-    return ((vals - epoch) / np.timedelta64(1, "s")).astype("int64")
+    return ((vals - epoch) / np.timedelta64(1, "s")).astype("int32")
 
 
 def build_time_refs(time_sequences: List[np.ndarray], chunk_hint: int, time_var: str = "time"):
@@ -67,7 +66,7 @@ def build_time_refs(time_sequences: List[np.ndarray], chunk_hint: int, time_var:
         store,
         encoding={
             time_var: {
-                "dtype": "i8",
+                "dtype": "i4",
                 "chunks": (chunk_hint,),
             }
         },
@@ -85,7 +84,7 @@ def fix_time(single_ref, nc_path: str, time_var: str = "time"):
         mem_store,
         encoding={
             time_var: {
-                "dtype": "i8",
+                "dtype": "i4",
             }
         },
     )
