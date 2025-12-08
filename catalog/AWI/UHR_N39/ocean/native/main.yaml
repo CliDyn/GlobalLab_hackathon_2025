@@ -1,0 +1,21 @@
+sources:
+  # ocean_daily:
+  #   driver: zarr
+  #   args:
+  #     urlpath: reference://
+  #     storage_options:
+  #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCO95L91-CORE2-ctl1950d_ocean_native_daily.json
+  #       remote_protocol: file
+  #       target_protocol: file
+  #       lazy: true
+  #     consolidated: false
+  ocean_monthly:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/UHR_ocean_ocean_N39_monthly.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false

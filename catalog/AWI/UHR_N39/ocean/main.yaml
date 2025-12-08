@@ -1,0 +1,11 @@
+sources:
+  # remap:
+  #   args:
+  #     path: "{{CATALOG_DIR}}/remap/main.yaml"
+  #   description: interpolated variables
+  #   driver: yaml_file_cat
+  native:
+    args:
+      path: "{{CATALOG_DIR}}/native/main.yaml"
+    description: original mesh
+    driver: yaml_file_cat  
