@@ -35,8 +35,8 @@ sources:
     description: Output of TCo1279-DART-1950C
     driver: yaml_file_cat
   
-  TCo1279-DART-1980C:
+  TCo1279-DART-2080C:
     args:
-      path: "{{CATALOG_DIR}}/TCo1279-DART-1980C/main.yaml"
-    description: Output of TCo1279-DART-1980C
+      path: "{{CATALOG_DIR}}/TCo1279-DART-2080C/main.yaml"
+    description: Output of TCo1279-DART-2080C
     driver: yaml_file_cat
