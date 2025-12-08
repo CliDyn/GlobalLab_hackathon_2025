@@ -1,0 +1,7 @@
+sources:
+  healpix:
+    args:
+      path: "{{CATALOG_DIR}}/healpix/main.yaml"
+    description: Atmosphere data 
+    driver: yaml_file_cat
+

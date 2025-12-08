@@ -11,3 +11,9 @@ sources:
     description: Output of UHR_N44
     driver: yaml_file_cat
 
+  DESTINE_STORYLINES:
+    args:
+      path: "{{CATALOG_DIR}}/DESTINE_STORYLINES/main.yaml"
+    description: Output of UHR_N44
+    driver: yaml_file_cat
+

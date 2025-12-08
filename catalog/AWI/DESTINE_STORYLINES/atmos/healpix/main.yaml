@@ -1,0 +1,64 @@
+sources:
+  hist_monthly:
+    driver: netcdf
+    args:
+      urlpath:
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/141/MNTHMN_141_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/165/MNTHMN_10Umax_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/165/MNTHMN_165_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/166/MNTHMN_10Vmax_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/166/MNTHMN_166_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/167/MNTHMN_167_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/167/MNTHMN_2Tmax_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/167/MNTHMN_2Tmin_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/178/MNTHMN_178_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/179/MNTHMN_179_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/186/MNTHMN_186_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/187/MNTHMN_187_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/188/MNTHMN_188_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/212/MNTHMN_212_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/hist/montly/263101/MNTHMN_SST_IFS-FESOM_o2d_20180703-20241231.nc
+      combine: nested   # merge datasets
+      concat_dim: null  # no concat, just merge variables
+  cont_monthly:
+    driver: netcdf
+    args:
+      urlpath:
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/165/MNTHMN_165_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/166/MNTHMN_166_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/141/MNTHMN_141_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/212/MNTHMN_212_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/178/MNTHMN_178_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/179/MNTHMN_179_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/186/MNTHMN_186_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/187/MNTHMN_187_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/188/MNTHMN_188_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/167/MNTHMN_167_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/263101/MNTHMN_SST_IFS-FESOM_o2d_20180101-20241031.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/165/MNTHMN_10Umax_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/166/MNTHMN_10Vmax_IFS-FESOM_sfc_20170101-20241115_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/167/MNTHMN_2Tmin_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/cont/monthly/167/MNTHMN_2Tmax_IFS-FESOM_sfc_20170101-20241231_E1.nc
+    combine: nested   # merge datasets
+    concat_dim: null  # no concat, just merge variables
+  tp2k_monthly:
+    driver: netcdf
+    args:
+      urlpath:
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/165/MNTHMN_165_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/166/MNTHMN_166_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/141/MNTHMN_141_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/212/MNTHMN_212_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/178/MNTHMN_178_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/179/MNTHMN_179_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/186/MNTHMN_186_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/187/MNTHMN_187_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/188/MNTHMN_188_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        # - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/167/MNTHMN_167_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/263101/MNTHMN_SST_IFS-FESOM_o2d_20180101-20241231.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/165/MNTHMN_10Umax_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/166/MNTHMN_10Vmax_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/167/MNTHMN_2Tmax_IFS-FESOM_sfc_20170101-20241231_E1.nc
+        - /work/bk1415/a270229/awi_hackathon/tp2k/monthly/167/MNTHMN_2Tmin_IFS-FESOM_sfc_20170101-20241231_E1.nc
+    combine: nested   # merge datasets
+    concat_dim: null  # no concat, just merge variables

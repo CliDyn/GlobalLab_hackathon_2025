@@ -1,0 +1,7 @@
+sources:
+  atmos:
+    args:
+      path: "{{CATALOG_DIR}}/atmos/main.yaml"
+    description: Atmosphere data 
+    driver: yaml_file_cat
+
