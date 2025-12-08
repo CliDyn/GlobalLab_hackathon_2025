@@ -28,3 +28,15 @@ sources:
       path: "{{CATALOG_DIR}}/TCO95L91-CORE2-ssp585d/main.yaml"
     description: Output of TCO95L91-CORE2-ssp585d
     driver: yaml_file_cat
+
+  TCo1279-DART-1950C:
+    args:
+      path: "{{CATALOG_DIR}}/TCo1279-DART-1950C/main.yaml"
+    description: Output of TCo1279-DART-1950C
+    driver: yaml_file_cat
+  
+  TCo1279-DART-1980C:
+    args:
+      path: "{{CATALOG_DIR}}/TCo1279-DART-1980C/main.yaml"
+    description: Output of TCo1279-DART-1980C
+    driver: yaml_file_cat
