@@ -52,7 +52,8 @@ def encode_value(v):
 def get_time_seconds(nc_path: str, epoch=DEFAULT_EPOCH, time_var: str = "time"):
     with xr.open_dataset(nc_path, decode_times=True) as ds:
         vals = ds[time_var].values
-    return ((vals - epoch) / np.timedelta64(1, "s")).astype("int32")
+    # Use int64 to avoid overflow for far-future dates
+    return ((vals - epoch) / np.timedelta64(1, "s")).astype("int64")
 
 
 def build_time_refs(time_sequences: List[np.ndarray], chunk_hint: int, time_var: str = "time"):
@@ -66,7 +67,7 @@ def build_time_refs(time_sequences: List[np.ndarray], chunk_hint: int, time_var:
         store,
         encoding={
             time_var: {
-                "dtype": "i4",
+                "dtype": "i8",
                 "chunks": (chunk_hint,),
             }
         },
@@ -84,7 +85,7 @@ def fix_time(single_ref, nc_path: str, time_var: str = "time"):
         mem_store,
         encoding={
             time_var: {
-                "dtype": "i4",
+                "dtype": "i8",
             }
         },
     )
@@ -171,7 +172,16 @@ def merge_refs(per_var_refs, time_refs):
     return merged
 
 
-def main(data_dir: Path, out_json: Path, variables: List[str], per_var_dir: Path, file_pattern: str, time_var: str):
+def main(
+    data_dir: Path,
+    out_json: Path,
+    variables: List[str],
+    per_var_dir: Path,
+    file_pattern: str,
+    time_var: str,
+    skip_first: int,
+    skip_last: int,
+):
     per_var_refs: List[dict] = []
     global_time_sequences = None
     reference_time_len = None
@@ -181,7 +191,12 @@ def main(data_dir: Path, out_json: Path, variables: List[str], per_var_dir: Path
     for var in variables:
         pattern = file_pattern.format(var=var)
         files = sorted(glob.glob(str(data_dir / pattern)))
+        if skip_first or skip_last:
+            start = skip_first
+            end = len(files) - skip_last if skip_last > 0 else len(files)
+            files = files[start:end]
         if not files:
+            print(f"[WARN] No files left for variable '{var}' after applying skip_first/skip_last; skipping variable.")
             continue
         refs, var_times = combine_variable_refs(var, files, time_var=time_var)
         total_len = sum(seq.shape[0] for seq in var_times)
@@ -302,9 +317,30 @@ def parse_args():
         default="time",
         help="Name of the time coordinate variable in the input NetCDF files (e.g. time, time_counter)",
     )
+    parser.add_argument(
+        "--skip-first",
+        type=int,
+        default=0,
+        help="Number of files to skip from the start of each variable's sorted file list (e.g. bad early years)",
+    )
+    parser.add_argument(
+        "--skip-last",
+        type=int,
+        default=0,
+        help="Number of files to skip from the end of each variable's sorted file list",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.data_dir, args.out_json, args.vars, args.per_var_dir, args.pattern, args.time_var)
+    main(
+        args.data_dir,
+        args.out_json,
+        args.vars,
+        args.per_var_dir,
+        args.pattern,
+        args.time_var,
+        args.skip_first,
+        args.skip_last,
+    )
