@@ -19,7 +19,7 @@ sources:
         target_protocol: file
         lazy: true
       consolidated: false
-  ocean_daily_depth:
+  ocean_daily_surface:
     driver: zarr
     args:
       urlpath: reference://
