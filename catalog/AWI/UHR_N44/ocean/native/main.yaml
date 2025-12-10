@@ -19,3 +19,13 @@ sources:
         target_protocol: file
         lazy: true
       consolidated: false
+  ocean_daily_depth:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/UHR_ocean_ocean_N44_daily_surface.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
