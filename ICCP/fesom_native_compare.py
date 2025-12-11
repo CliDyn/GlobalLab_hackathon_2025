@@ -94,7 +94,15 @@ Available variables: """ + ', '.join(CUSTOM_VARIABLES.keys())
 parser.add_argument('--date', '-d', type=str, default='1950-04-11', 
                     help='Date to plot (YYYY-MM-DD format, default: 1950-04-11)')
 parser.add_argument('--region', '-r', type=str, default='global', 
-                    choices=['global', 'korea', 'baltic', 'mediterranean', 'arctic', 'antarctic'],
+                    choices=['global', 'arctic', 'antarctic',
+                             # Regional seas
+                             'korea', 'baltic', 'mediterranean', 'aden', 'redsea', 'persian',
+                             'gulfmexico', 'caribbean', 'labrador', 'norwegian', 'northsea',
+                             # Western boundary currents
+                             'gulfstream', 'kuroshio', 'agulhas', 'brazil', 'somali',
+                             # Straits and passages
+                             'gibraltar', 'bering', 'drake', 'denmark', 'florida', 'taiwan',
+                             'malacca', 'english', 'mozambique', 'indonesia', 'luzon', 'fram'],
                     help='Region to plot (default: global)')
 parser.add_argument('--variable', '-v', type=str, default='temp',
                     choices=list(CUSTOM_VARIABLES.keys()),
@@ -130,12 +138,44 @@ configs = {
 # Region configurations
 # =============================================================================
 REGIONS = {
+    # Global and polar
     'global': {'extent': None, 'title': 'Global', 'projection': 'platecarree'},
+    'arctic': {'extent': None, 'title': 'Arctic Ocean', 'projection': 'north_polar', 'lat_limit': 65},
+    'antarctic': {'extent': None, 'title': 'Antarctic Ocean', 'projection': 'south_polar', 'lat_limit': -60},
+    
+    # Regional seas
     'korea': {'extent': [120, 135, 30, 45], 'title': 'Korean Peninsula', 'projection': 'platecarree'},
     'baltic': {'extent': [9, 31, 53, 66], 'title': 'Baltic Sea', 'projection': 'platecarree'},
     'mediterranean': {'extent': [-6, 37, 30, 46], 'title': 'Mediterranean Sea', 'projection': 'platecarree'},
-    'arctic': {'extent': None, 'title': 'Arctic Ocean', 'projection': 'north_polar', 'lat_limit': 65},
-    'antarctic': {'extent': None, 'title': 'Antarctic Ocean', 'projection': 'south_polar', 'lat_limit': -60},
+    'aden': {'extent': [42, 52, 10, 16], 'title': 'Gulf of Aden', 'projection': 'platecarree'},
+    'redsea': {'extent': [32, 44, 12, 30], 'title': 'Red Sea', 'projection': 'platecarree'},
+    'persian': {'extent': [47, 57, 23, 31], 'title': 'Persian Gulf', 'projection': 'platecarree'},
+    'gulfmexico': {'extent': [-98, -80, 18, 31], 'title': 'Gulf of Mexico', 'projection': 'platecarree'},
+    'caribbean': {'extent': [-88, -60, 8, 25], 'title': 'Caribbean Sea', 'projection': 'platecarree'},
+    'labrador': {'extent': [-65, -45, 50, 65], 'title': 'Labrador Sea', 'projection': 'platecarree'},
+    'norwegian': {'extent': [-10, 20, 60, 75], 'title': 'Norwegian Sea', 'projection': 'platecarree'},
+    'northsea': {'extent': [-5, 12, 50, 62], 'title': 'North Sea', 'projection': 'platecarree'},
+    
+    # Western boundary currents (high SSH variability)
+    'gulfstream': {'extent': [-82, -55, 25, 45], 'title': 'Gulf Stream', 'projection': 'platecarree'},
+    'kuroshio': {'extent': [120, 150, 20, 42], 'title': 'Kuroshio Current', 'projection': 'platecarree'},
+    'agulhas': {'extent': [15, 45, -45, -25], 'title': 'Agulhas Current', 'projection': 'platecarree'},
+    'brazil': {'extent': [-55, -30, -45, -20], 'title': 'Brazil-Malvinas Confluence', 'projection': 'platecarree'},
+    'somali': {'extent': [42, 65, -5, 15], 'title': 'Somali Current', 'projection': 'platecarree'},
+    
+    # Narrow passages and straits
+    'gibraltar': {'extent': [-8, -3, 34, 38], 'title': 'Strait of Gibraltar', 'projection': 'platecarree'},
+    'bering': {'extent': [-175, -160, 62, 70], 'title': 'Bering Strait', 'projection': 'platecarree'},
+    'drake': {'extent': [-75, -50, -65, -52], 'title': 'Drake Passage', 'projection': 'platecarree'},
+    'denmark': {'extent': [-35, -20, 62, 70], 'title': 'Denmark Strait', 'projection': 'platecarree'},
+    'florida': {'extent': [-84, -78, 22, 28], 'title': 'Florida Strait', 'projection': 'platecarree'},
+    'taiwan': {'extent': [116, 124, 21, 27], 'title': 'Taiwan Strait', 'projection': 'platecarree'},
+    'malacca': {'extent': [96, 106, -2, 8], 'title': 'Malacca Strait', 'projection': 'platecarree'},
+    'english': {'extent': [-6, 3, 48, 52], 'title': 'English Channel', 'projection': 'platecarree'},
+    'mozambique': {'extent': [30, 50, -28, -10], 'title': 'Mozambique Channel', 'projection': 'platecarree'},
+    'indonesia': {'extent': [110, 140, -12, 5], 'title': 'Indonesian Throughflow', 'projection': 'platecarree'},
+    'luzon': {'extent': [118, 124, 18, 23], 'title': 'Luzon Strait', 'projection': 'platecarree'},
+    'fram': {'extent': [-15, 15, 75, 82], 'title': 'Fram Strait', 'projection': 'platecarree'},
 }
 
 # =============================================================================
@@ -333,7 +373,8 @@ for res_name, result in results.items():
     
     ax.coastlines(linewidth=0.5, color='black')
     ax.add_feature(cfeature.LAND, facecolor='lightgray', zorder=1)
-    if args.region in ['korea', 'baltic', 'mediterranean']:
+    if args.region not in ['global', 'arctic', 'antarctic', 'gulfstream', 'kuroshio', 
+                              'agulhas', 'brazil', 'somali', 'drake']:
         ax.add_feature(cfeature.BORDERS, linewidth=0.3, linestyle=':')
     
     ax.set_title(title, fontsize=11)
