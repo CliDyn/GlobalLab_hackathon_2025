@@ -40,3 +40,15 @@ sources:
       path: "{{CATALOG_DIR}}/TCo1279-DART-2080C/main.yaml"
     description: Output of TCo1279-DART-2080C
     driver: yaml_file_cat
+
+  TCo1279-DART-2000:
+    args:
+      path: "{{CATALOG_DIR}}/TCo1279-DART-2000/main.yaml"
+    description: Output of TCo1279-DART-2000
+    driver: yaml_file_cat
+
+  TCO95L91-CORE2-hi1950d:
+    args:
+      path: "{{CATALOG_DIR}}/TCO95L91-CORE2-hi1950d/main.yaml"
+    description: Output of TCO95L91-CORE2-hi1950d
+    driver: yaml_file_cat
