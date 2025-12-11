@@ -1,0 +1,81 @@
+sources:
+  # ocean_daily_3d:
+  #   driver: zarr
+  #   args:
+  #     urlpath: reference://
+  #     storage_options:
+  #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo1279-DART-2080C_ocean_native_daily_3d.json
+  #       remote_protocol: file
+  #       target_protocol: file
+  #       lazy: true
+  #     consolidated: false
+  ocean_daily_2d:
+    driver: zarr
+    args:
+      urlpath: reference://
+      storage_options:
+        fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCO95L91-CORE2-hi1950d_ocean_native_daily_2d.json
+        remote_protocol: file
+        target_protocol: file
+        lazy: true
+      consolidated: false
+ # ocean_monthly:
+ #   driver: zarr
+ #   args:
+ #     urlpath: reference://
+ #     storage_options:
+ #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/TCo1279-DART-2080C_ocean_native_monthly.json
+ #       remote_protocol: file
+ #       target_protocol: file
+ #       lazy: true
+ #     consolidated: false
+ # ocean_daily_temp:
+ #   driver: zarr
+ #   args:
+ #     urlpath: reference://
+ #     storage_options:
+ #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/per_var_TCo1279-DART-2080C_ocean_native_daily_3d/temp1-31_combined.json
+ #       remote_protocol: file
+ #       target_protocol: file
+ #       lazy: true
+ #     consolidated: false
+ # ocean_daily_salt:
+ #   driver: zarr
+ #   args:
+ #     urlpath: reference://
+ #     storage_options:
+ #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/per_var_TCo1279-DART-2080C_ocean_native_daily_3d/salt1-31_combined.json
+ #       remote_protocol: file
+ #       target_protocol: file
+ #       lazy: true
+ #     consolidated: false
+ # ocean_daily_u:
+ #   driver: zarr
+ #   args:
+ #     urlpath: reference://
+ #     storage_options:
+ #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/per_var_TCo1279-DART-2080C_ocean_native_daily_3d/u1-31_combined.json
+ #       remote_protocol: file
+ #       target_protocol: file
+ #       lazy: true
+ #     consolidated: false
+ # ocean_daily_v:
+ #   driver: zarr
+ #   args:
+ #     urlpath: reference://
+ #     storage_options:
+ #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/per_var_TCo1279-DART-2080C_ocean_native_daily_3d/v1-31_combined.json
+ #       remote_protocol: file
+ #       target_protocol: file
+ #       lazy: true
+ #     consolidated: false
+ # ocean_daily_w:
+ #   driver: zarr
+ #   args:
+ #     urlpath: reference://
+ #     storage_options:
+ #       fo: /work/ab0995/ICCP_AWI_hackthon_2025/kerchunk/per_var_TCo1279-DART-2080C_ocean_native_daily_3d/w1-31_combined.json
+ #       remote_protocol: file
+ #       target_protocol: file
+ #       lazy: true
+ #     consolidated: false
