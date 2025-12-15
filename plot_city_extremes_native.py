@@ -165,30 +165,78 @@ for i, row in ssp_sorted.head(10).iterrows():
         vmin=35, vmax=65
     )
 
-# Plot top 10 by difference (biggest warming)
+# Plot top 10 by difference (side-by-side comparison)
 print("\n=== Top 10 Cities by Temperature Increase ===")
 for i, row in diff_sorted.head(10).iterrows():
     city_safe = row['city_name'].replace(' ', '_').replace('/', '_')
     diff_val = row['temp_diff']
-    # Plot CTRL
-    plot_regional_temp_native(
-        ds_ctrl, int(row['time_idx_ctrl']),
-        row['city_lat'], row['city_lon'], row['city_name'],
-        row['timestamp_ctrl'],
-        f"CTRL ({row['max_temp_ctrl']:.1f}°C)",
-        DIFF_DIR,
-        f"diff_record_{i+1:02d}_{city_safe}_ctrl_{row['max_temp_ctrl']:.0f}C.png",
-        vmin=10, vmax=50
-    )
-    # Plot SSP585
-    plot_regional_temp_native(
-        ds_ssp, int(row['time_idx_ssp']),
-        row['city_lat'], row['city_lon'], row['city_name'],
-        row['timestamp_ssp'],
-        f"SSP585 ({row['max_temp_ssp']:.1f}°C) [+{diff_val:.1f}°C]",
-        DIFF_DIR,
-        f"diff_record_{i+1:02d}_{city_safe}_ssp585_{row['max_temp_ssp']:.0f}C.png",
-        vmin=10, vmax=50
-    )
+    city_lat, city_lon = row['city_lat'], row['city_lon']
+    radius_deg = 5
+    
+    print(f"  Plotting {row['city_name']} comparison...")
+    
+    # Define region bounds
+    lon_min, lon_max = city_lon - radius_deg, city_lon + radius_deg
+    lat_min, lat_max = city_lat - radius_deg, city_lat + radius_deg
+    
+    # Find cells in region
+    region_mask = ((lon_centers >= lon_min - 0.5) & (lon_centers <= lon_max + 0.5) &
+                   (lat_centers >= lat_min - 0.5) & (lat_centers <= lat_max + 0.5) &
+                   valid_global_mask)
+    cell_indices = np.where(region_mask)[0]
+    verts_region = cell_verts[cell_indices]
+    
+    # Load both datasets
+    temp_ctrl = ds_ctrl['2t'].isel(time_counter=int(row['time_idx_ctrl'])).values[cell_indices] - 273.15
+    temp_ssp = ds_ssp['2t'].isel(time_counter=int(row['time_idx_ssp'])).values[cell_indices] - 273.15
+    
+    # Create figure with gridspec for tight layout
+    fig = plt.figure(figsize=(12, 6))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1, 0.05], hspace=0.15, wspace=0.08,
+                          left=0.05, right=0.95, top=0.88, bottom=0.12)
+    
+    ax1 = fig.add_subplot(gs[0, 0], projection=ccrs.PlateCarree())
+    ax2 = fig.add_subplot(gs[0, 1], projection=ccrs.PlateCarree())
+    cbar_ax = fig.add_subplot(gs[1, :])
+    
+    vmin, vmax = 10, 55
+    
+    for ax, temp_data, title, timestamp in [
+        (ax1, temp_ctrl, f"CTRL ({row['max_temp_ctrl']:.1f}°C)", row['timestamp_ctrl']),
+        (ax2, temp_ssp, f"SSP585 ({row['max_temp_ssp']:.1f}°C)", row['timestamp_ssp'])
+    ]:
+        ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
+        
+        collection = PolyCollection(
+            verts_region, array=temp_data, cmap='RdYlBu_r',
+            edgecolors='none', linewidths=0, transform=ccrs.PlateCarree(),
+        )
+        collection.set_clim(vmin, vmax)
+        ax.add_collection(collection)
+        
+        ax.coastlines(linewidth=1.5, color='black', zorder=5)
+        ax.add_feature(cfeature.BORDERS, linewidth=1.0, linestyle='-', color='#333333', zorder=4)
+        ax.add_feature(cfeature.RIVERS, linewidth=0.8, edgecolor='#0066cc', zorder=3)
+        ax.add_feature(cfeature.LAKES, facecolor='#99ccff', edgecolor='#0066cc', linewidth=0.5, zorder=3)
+        
+        ax.plot(city_lon, city_lat, 'k*', markersize=18, transform=ccrs.PlateCarree(), zorder=10)
+        ax.plot(city_lon, city_lat, 'w*', markersize=10, transform=ccrs.PlateCarree(), zorder=11)
+        
+        ax.set_title(f"{title}\n{timestamp[:10]}", fontsize=11)
+        
+        gl = ax.gridlines(draw_labels=True, linewidth=0.5, alpha=0.5, linestyle='--')
+        gl.top_labels = False
+        gl.right_labels = False
+    
+    # Horizontal colorbar at bottom
+    cbar = fig.colorbar(collection, cax=cbar_ax, orientation='horizontal')
+    cbar.set_label('Temperature (°C)', fontsize=11)
+    
+    fig.suptitle(f"{row['city_name']}, {row['country']} — Warming: +{diff_val:.1f}°C", 
+                 fontsize=14, fontweight='bold', y=0.96)
+    
+    plt.savefig(DIFF_DIR / f"diff_record_{i+1:02d}_{city_safe}_+{diff_val:.0f}C.png", dpi=150)
+    plt.close()
+    print(f"    Saved: difference_records/diff_record_{i+1:02d}_{city_safe}_+{diff_val:.0f}C.png")
 
 print(f"\nDone! Plots saved to {BASE_DIR}")
