@@ -23,11 +23,11 @@ echo ""
 echo "CTRL done: $(date)"
 echo ""
 
-# SSP585: 2080C, 2086-2099 (14 years)
-echo "Running SSP585 (2080C) 2086-2099..."
+# SSP585: 2080C, 2091-2099 (9 years - 3h data only available from 2091)
+echo "Running SSP585 (2080C) 2091-2099..."
 python3 dunkelflaute_analysis.py \
     --source tco1279 --scenario 2080C \
-    --start 2086 --end 2099 \
+    --start 2091 --end 2099 \
     --output-dir ./dunkelflaute_results/tco1279_SSP585 \
     --region Germany --db $DB_PATH
 

@@ -38,16 +38,16 @@ python3 dunkelflaute_analysis.py \
 
 echo "CTRL finished: $(date)"
 
-# SSP585 period: 2080C scenario, 2086-2099 (14 years)
+# SSP585 period: 2080C scenario, 2091-2099 (9 years - 3h data starts 2091)
 echo ""
-echo "=== Running SSP585 (2080C) 2086-2099 ==="
+echo "=== Running SSP585 (2080C) 2091-2099 ==="
 OUTPUT_SSP="${SCRIPT_DIR}/dunkelflaute_results/tco1279_SSP585"
 mkdir -p $OUTPUT_SSP
 
 python3 dunkelflaute_analysis.py \
     --source tco1279 \
     --scenario 2080C \
-    --start 2086 \
+    --start 2091 \
     --end 2099 \
     --output-dir $OUTPUT_SSP \
     --region Germany \
