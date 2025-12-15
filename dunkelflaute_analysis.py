@@ -108,8 +108,23 @@ class TCo1279Config:
         ym = f"{year}{month:02d}"
         return self.base_path / f"atm_reduced_3h_{var}_3h_{ym}-{ym}.nc"
     
-    # Grid file for lat/lon coordinates
-    grid_file = Path("/work/ab0246/a270092/input/oasis/cy43r3/TCO1279-DART/grids.nc")
+    # Grid file for lat/lon coordinates (system-dependent)
+    # Levante: /work/ab0246/a270092/input/oasis/cy43r3/TCO1279-DART/grids.nc
+    # Aleph: /proj/awi/input/fesom2/dart/grids.nc (or similar)
+    @staticmethod
+    def get_grid_file():
+        """Get grid file path based on available system paths."""
+        paths = [
+            Path("/proj/awi/input/fesom2/dart/grids.nc"),  # Aleph
+            Path("/work/ab0246/a270092/input/oasis/cy43r3/TCO1279-DART/grids.nc"),  # Levante
+        ]
+        for p in paths:
+            if p.exists():
+                return p
+        # Return first as default
+        return paths[0]
+    
+    grid_file = None  # Will be set dynamically
 
 
 # ============================================================================
@@ -607,7 +622,8 @@ def load_tco1279_data(year, months=None, scenario='1950C', n_workers=None):
     
     # Prepare arguments for parallel processing
     # germany_mask will be computed in each worker (slight overhead but simpler)
-    args_list = [(year, month, base_path, str(config.grid_file), None) for month in months]
+    grid_file = str(config.get_grid_file())
+    args_list = [(year, month, base_path, grid_file, None) for month in months]
     
     # Process months in parallel
     all_results = []
