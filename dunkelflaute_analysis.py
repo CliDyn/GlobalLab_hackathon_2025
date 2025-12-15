@@ -508,36 +508,60 @@ def _process_tco1279_month(args):
     if germany_mask_data is not None:
         germany_mask = germany_mask_data
     else:
-        # Try to get coordinates from dataset
-        if 'lat' in ds_u10.coords:
-            lats = ds_u10['lat'].values
-            lons = ds_u10['lon'].values
-        elif 'latitude' in ds_u10.coords:
-            lats = ds_u10['latitude'].values
-            lons = ds_u10['longitude'].values
-        else:
-            # Load from grid file
+        # Try to get coordinates from dataset (various naming conventions)
+        lats = None
+        lons = None
+        for lat_name in ['lat', 'latitude', 'nav_lat']:
+            if lat_name in ds_u10.coords or lat_name in ds_u10.data_vars:
+                lats = ds_u10[lat_name].values.flatten()
+                break
+        for lon_name in ['lon', 'longitude', 'nav_lon']:
+            if lon_name in ds_u10.coords or lon_name in ds_u10.data_vars:
+                lons = ds_u10[lon_name].values.flatten()
+                break
+        
+        # If not in dataset, load from grid file
+        if lats is None or lons is None:
             try:
                 grid_ds = xr.open_dataset(grid_file)
-                lats = grid_ds['oifs.lat'].values.flatten()
-                lons = grid_ds['oifs.lon'].values.flatten()
+                # Try different variable names
+                for lat_name in ['oifs.lat', 'lat', 'latitude', 'nav_lat']:
+                    if lat_name in grid_ds:
+                        lats = grid_ds[lat_name].values.flatten()
+                        break
+                for lon_name in ['oifs.lon', 'lon', 'longitude', 'nav_lon']:
+                    if lon_name in grid_ds:
+                        lons = grid_ds[lon_name].values.flatten()
+                        break
                 grid_ds.close()
-            except:
+            except Exception as e:
+                print(f"    Error loading grid file: {e}")
                 ds_u10.close(); ds_v10.close(); ds_solar.close()
                 return []
+        
+        if lats is None or lons is None:
+            print("    Error: Cannot determine grid coordinates")
+            ds_u10.close(); ds_v10.close(); ds_solar.close()
+            return []
         
         germany_mask = ((lons >= GERMANY_BOUNDS['lon_min']) & 
                        (lons <= GERMANY_BOUNDS['lon_max']) &
                        (lats >= GERMANY_BOUNDS['lat_min']) & 
                        (lats <= GERMANY_BOUNDS['lat_max']))
     
-    # Get variable names
-    u10_var = [v for v in ds_u10.data_vars][0]
-    v10_var = [v for v in ds_v10.data_vars][0]
-    solar_data_var = [v for v in ds_solar.data_vars][0]
+    # Get variable names (skip bounds_* variables)
+    u10_var = [v for v in ds_u10.data_vars if not v.startswith('bounds_')][0]
+    v10_var = [v for v in ds_v10.data_vars if not v.startswith('bounds_')][0]
+    solar_data_var = [v for v in ds_solar.data_vars if not v.startswith('bounds_')][0]
     
-    # Get time dimension
-    time_dim = 'time' if 'time' in ds_u10.dims else list(ds_u10.dims)[0]
+    # Get time dimension (could be 'time', 'time_counter', etc.)
+    time_dim = None
+    for td in ['time', 'time_counter']:
+        if td in ds_u10.dims:
+            time_dim = td
+            break
+    if time_dim is None:
+        time_dim = [d for d in ds_u10.dims if 'time' in d.lower()][0] if any('time' in d.lower() for d in ds_u10.dims) else list(ds_u10.dims)[0]
     n_times = ds_u10.dims[time_dim]
     
     for i in range(n_times):
