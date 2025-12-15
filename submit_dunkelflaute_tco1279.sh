@@ -1,4 +1,4 @@
-#!/bin/sh
+mesh_cavity.nc#!/bin/sh
 #PBS -q iccp
 #PBS -l walltime=08:00:00
 #PBS -l nodes=1
@@ -16,7 +16,7 @@ START_YEAR=${START_YEAR:-1950}
 END_YEAR=${END_YEAR:-2014}
 
 # Path to the script (adjust as needed for target HPC)
-SCRIPT_DIR="/scratch/awiiccp2/dunkelflaute"
+SCRIPT_DIR="/mnt/lustre/home/awiiccp2/software/GlobalLab_hackathon_2025"
 cd $SCRIPT_DIR
 
 echo "Starting TCo1279-DART Dunkelflaute analysis"
