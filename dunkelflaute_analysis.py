@@ -868,7 +868,8 @@ def analyze_year(year, save_results=True, output_dir=None, data_source='era5', s
     return events, stats, df
 
 
-def analyze_multi_year(start_year, end_year, output_dir=None, data_source='era5', scenario='1950C'):
+def analyze_multi_year(start_year, end_year, output_dir=None, data_source='era5', scenario='1950C',
+                       region='Germany', db_path=None):
     """
     Run dunkelflaute analysis for multiple years.
     
@@ -878,6 +879,8 @@ def analyze_multi_year(start_year, end_year, output_dir=None, data_source='era5'
         output_dir: Directory for output files
         data_source: 'era5' or 'tco1279'
         scenario: TCo1279 scenario ('1950C' or '2080C')
+        region: Region name for database storage
+        db_path: Path to SQLite database (optional)
     
     Returns:
         all_events: List of all events across years
@@ -885,12 +888,14 @@ def analyze_multi_year(start_year, end_year, output_dir=None, data_source='era5'
     """
     all_events = []
     annual_stats = {}
+    events_by_year = {}
     
     for year in range(start_year, end_year + 1):
         try:
             events, stats, _ = analyze_year(year, save_results=True, output_dir=output_dir,
                                            data_source=data_source, scenario=scenario)
             annual_stats[year] = stats
+            events_by_year[year] = events
             for evt in events:
                 evt['year'] = year
             all_events.extend(events)
@@ -942,6 +947,26 @@ def analyze_multi_year(start_year, end_year, output_dir=None, data_source='era5'
             events_df = pd.DataFrame(all_events)
             events_df.to_csv(output_dir / f"dunkelflaute_all_events_{start_year}_{end_year}.csv", index=False)
     
+    # Save to database
+    if db_path and annual_stats:
+        from dunkelflaute_db import save_results_to_db
+        model = 'ERA5' if data_source == 'era5' else 'TCo1279-DART'
+        db_scenario = scenario if data_source == 'tco1279' else 'historical'
+        resolution = '0.25deg' if data_source == 'era5' else 'TCo1279'
+        save_results_to_db(
+            db_path=db_path,
+            region=region,
+            model=model,
+            scenario=db_scenario,
+            start_year=start_year,
+            end_year=end_year,
+            events_by_year=events_by_year,
+            stats_by_year=annual_stats,
+            resolution=resolution,
+            threshold=DUNKELFLAUTE_PARAMS['threshold'],
+            capacity_weights=CAPACITY_WEIGHTS
+        )
+    
     return all_events, annual_stats
 
 
@@ -977,6 +1002,10 @@ Examples:
                         help='Data source: era5 or tco1279 (default: era5)')
     parser.add_argument('--scenario', type=str, choices=['1950C', '2080C'], default='1950C',
                         help='TCo1279-DART scenario (default: 1950C)')
+    parser.add_argument('--region', type=str, default='Germany',
+                        help='Region name for database (default: Germany)')
+    parser.add_argument('--db', type=str, default=None,
+                        help='Path to SQLite database for storing results')
     
     args = parser.parse_args()
     
@@ -990,7 +1019,8 @@ Examples:
                     data_source=args.source, scenario=args.scenario)
     elif args.start and args.end:
         analyze_multi_year(args.start, args.end, output_dir=args.output_dir,
-                          data_source=args.source, scenario=args.scenario)
+                          data_source=args.source, scenario=args.scenario,
+                          region=args.region, db_path=args.db)
     else:
         parser.print_help()
         print("\nError: Must specify either --year or both --start and --end")

@@ -18,6 +18,9 @@ echo "Dunkelflaute CTRL vs SSP585 Comparison"
 echo "=============================================="
 echo "Start time: $(date)"
 
+# Database for storing results
+DB_PATH="${SCRIPT_DIR}/dunkelflaute_results/dunkelflaute_results.db"
+
 # CTRL period: 1950C scenario, 1995-2014 (20 years)
 echo ""
 echo "=== Running CTRL (1950C) 1995-2014 ==="
@@ -29,7 +32,9 @@ python3 dunkelflaute_analysis.py \
     --scenario 1950C \
     --start 1995 \
     --end 2014 \
-    --output-dir $OUTPUT_CTRL
+    --output-dir $OUTPUT_CTRL \
+    --region Germany \
+    --db $DB_PATH
 
 echo "CTRL finished: $(date)"
 
@@ -44,7 +49,9 @@ python3 dunkelflaute_analysis.py \
     --scenario 2080C \
     --start 2086 \
     --end 2099 \
-    --output-dir $OUTPUT_SSP
+    --output-dir $OUTPUT_SSP \
+    --region Germany \
+    --db $DB_PATH
 
 echo "SSP585 finished: $(date)"
 
