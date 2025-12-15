@@ -23,7 +23,7 @@ for year in $(seq 1979 2024); do
     echo "=========================================="
     echo "Processing year $year"
     echo "=========================================="
-    python3 dunkelflaute_era5.py --year $year --output-dir ./dunkelflaute_results
+    python3 dunkelflaute_analysis.py --year $year --output-dir ./dunkelflaute_results
 done
 
 echo ""

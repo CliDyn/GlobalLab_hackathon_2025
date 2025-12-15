@@ -28,7 +28,7 @@ echo "Start time: $(date)"
 OUTPUT_DIR="${SCRIPT_DIR}/dunkelflaute_results/tco1279_${SCENARIO}"
 mkdir -p $OUTPUT_DIR
 
-python3 dunkelflaute_era5.py \
+python3 dunkelflaute_analysis.py \
     --source tco1279 \
     --scenario $SCENARIO \
     --start $START_YEAR \

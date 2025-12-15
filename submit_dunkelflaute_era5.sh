@@ -20,6 +20,6 @@ cd /work/ab0246/a270092/software/GlobalLab_hackathon_2025
 echo "Starting Dunkelflaute analysis for year $YEAR"
 echo "Time: $(date)"
 
-python3 dunkelflaute_era5.py --year $YEAR --output-dir ./dunkelflaute_results
+python3 dunkelflaute_analysis.py --year $YEAR --output-dir ./dunkelflaute_results
 
 echo "Finished: $(date)"
