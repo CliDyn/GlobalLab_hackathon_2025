@@ -549,10 +549,12 @@ def _process_tco1279_month(args):
                        (lats >= GERMANY_BOUNDS['lat_min']) & 
                        (lats <= GERMANY_BOUNDS['lat_max']))
     
-    # Get variable names (skip bounds_* variables)
-    u10_var = [v for v in ds_u10.data_vars if not v.startswith('bounds_')][0]
-    v10_var = [v for v in ds_v10.data_vars if not v.startswith('bounds_')][0]
-    solar_data_var = [v for v in ds_solar.data_vars if not v.startswith('bounds_')][0]
+    # Get variable names (skip bounds and time-related variables)
+    skip_vars = ['bounds_lon', 'bounds_lat', 'time_instant_bounds', 'time_counter_bounds', 
+                 'time_centered_bounds', 'nav_lon', 'nav_lat']
+    u10_var = [v for v in ds_u10.data_vars if v not in skip_vars and 'bounds' not in v][0]
+    v10_var = [v for v in ds_v10.data_vars if v not in skip_vars and 'bounds' not in v][0]
+    solar_data_var = [v for v in ds_solar.data_vars if v not in skip_vars and 'bounds' not in v][0]
     
     # Get time dimension (could be 'time', 'time_counter', etc.)
     time_dim = None
