@@ -70,22 +70,31 @@ class ERA5Config:
 
 
 class TCo1279Config:
-    """Configuration for TCo1279-DART data (template for future use)."""
+    """Configuration for TCo1279-DART data."""
     name = "TCo1279-DART"
-    base_path = Path("/work/ab0246/a270092/data/TCo1279-DART")  # Adjust as needed
+    # Base path - adjust for 1950C or 2080C scenario
+    base_path = Path("/scratch/awicm3/TCo1279-DART-1950C/outdata/oifs")
     temporal_resolution_hours = 3  # TCo1279 is 3-hourly
     
-    # Variable mapping (adjust based on actual variable names in TCo1279)
+    # File pattern: atm_reduced_3h_{var}_3h_YYYYMM-YYYYMM.nc
+    # Available 3h variables:
+    # - 10u, 10v: 10m wind components
+    # - tsr: Top net solar radiation (use for solar CF)
+    # - tcc, hcc, mcc, lcc: Cloud cover (fallback for solar)
     var_names = {
         '10u': '10u',
-        '10v': '10v', 
-        'ssrd': 'ssrd',  # or alternative like 'ssr' or computed from cloud cover
-        '100u': '100u',
-        '100v': '100v',
+        '10v': '10v',
+        'tsr': 'tsr',   # Top net solar radiation (alternative to ssrd)
+        'tcc': 'tcc',   # Total cloud cover (fallback)
     }
     
-    # Native grid - will need grid file for lat/lon
-    grid_file = "/work/ab0246/a270092/input/oasis/cy43r3/TCO1279-DART/grids.nc"
+    def get_file_pattern(self, var, year, month):
+        """Get file path for a variable and month."""
+        ym = f"{year}{month:02d}"
+        return self.base_path / f"atm_reduced_3h_{var}_3h_{ym}-{ym}.nc"
+    
+    # Grid file for lat/lon coordinates
+    grid_file = Path("/work/ab0246/a270092/input/oasis/cy43r3/TCO1279-DART/grids.nc")
 
 
 # ============================================================================
@@ -427,6 +436,167 @@ def load_era5_data_efficient(year, months=None):
     return pd.DataFrame(results).set_index('time').sort_index()
 
 
+def load_tco1279_data(year, months=None, scenario='1950C'):
+    """
+    Load TCo1279-DART data for dunkelflaute calculation.
+    
+    TCo1279-DART has 3-hourly data in NetCDF format.
+    Uses TSR (top net solar radiation) for solar CF, or TCC (cloud cover) as fallback.
+    
+    Args:
+        year: Year to load
+        months: List of months (1-12) or None for full year
+        scenario: '1950C' or '2080C'
+    
+    Returns:
+        DataFrame with 3-hourly time series of Germany-average capacity factors
+    """
+    config = TCo1279Config()
+    
+    # Adjust base path for scenario
+    if scenario == '2080C':
+        config.base_path = Path("/scratch/awicm3/TCo1279-DART-2080C/outdata/oifs")
+    
+    if months is None:
+        months = range(1, 13)
+    
+    results = []
+    germany_mask = None
+    lats = None
+    lons = None
+    
+    for month in months:
+        print(f"  Processing {year}-{month:02d}... ({month}/12 = {month*100//12}%)", flush=True)
+        
+        # Build file paths
+        u10_file = config.get_file_pattern('10u', year, month)
+        v10_file = config.get_file_pattern('10v', year, month)
+        tsr_file = config.get_file_pattern('tsr', year, month)
+        tcc_file = config.get_file_pattern('tcc', year, month)
+        
+        # Check which files exist
+        if not u10_file.exists() or not v10_file.exists():
+            print(f"    Warning: Missing wind data for {year}-{month:02d}")
+            continue
+        
+        use_tsr = tsr_file.exists()
+        use_tcc = tcc_file.exists() and not use_tsr
+        
+        if not use_tsr and not use_tcc:
+            print(f"    Warning: No solar/cloud data for {year}-{month:02d}")
+            continue
+        
+        # Load data
+        try:
+            ds_u10 = xr.open_dataset(u10_file)
+            ds_v10 = xr.open_dataset(v10_file)
+            
+            if use_tsr:
+                ds_solar = xr.open_dataset(tsr_file)
+                solar_var = 'tsr'
+            else:
+                ds_solar = xr.open_dataset(tcc_file)
+                solar_var = 'tcc'
+        except Exception as e:
+            print(f"    Error loading {year}-{month:02d}: {e}")
+            continue
+        
+        # Get lat/lon from dataset or grid file
+        if germany_mask is None:
+            # Try to get coordinates from dataset
+            if 'lat' in ds_u10.coords:
+                lats = ds_u10['lat'].values
+                lons = ds_u10['lon'].values
+            elif 'latitude' in ds_u10.coords:
+                lats = ds_u10['latitude'].values
+                lons = ds_u10['longitude'].values
+            else:
+                # Load from grid file
+                try:
+                    grid_ds = xr.open_dataset(config.grid_file)
+                    lats = grid_ds['oifs.lat'].values.flatten()
+                    lons = grid_ds['oifs.lon'].values.flatten()
+                    grid_ds.close()
+                except:
+                    print("    Error: Cannot determine grid coordinates")
+                    continue
+            
+            # Create Germany mask
+            germany_mask = ((lons >= GERMANY_BOUNDS['lon_min']) & 
+                           (lons <= GERMANY_BOUNDS['lon_max']) &
+                           (lats >= GERMANY_BOUNDS['lat_min']) & 
+                           (lats <= GERMANY_BOUNDS['lat_max']))
+            n_germany_cells = germany_mask.sum()
+            print(f"    Found {n_germany_cells} grid cells for Germany")
+        
+        # Get variable name in dataset
+        u10_var = [v for v in ds_u10.data_vars][0]
+        v10_var = [v for v in ds_v10.data_vars][0]
+        solar_data_var = [v for v in ds_solar.data_vars][0]
+        
+        # Get time dimension
+        time_dim = 'time' if 'time' in ds_u10.dims else list(ds_u10.dims)[0]
+        n_times = ds_u10.dims[time_dim]
+        
+        for i in range(n_times):
+            t = ds_u10[time_dim].values[i]
+            
+            # Extract values - handle different grid structures
+            u10_data = ds_u10[u10_var].isel({time_dim: i}).values
+            v10_data = ds_v10[v10_var].isel({time_dim: i}).values
+            
+            # Flatten if needed and apply mask
+            if u10_data.ndim > 1:
+                u10_data = u10_data.flatten()
+                v10_data = v10_data.flatten()
+            
+            u10 = u10_data[germany_mask]
+            v10 = v10_data[germany_mask]
+            
+            # Wind at hub height
+            ws_hub = wind_speed_at_hub_height(u10, v10, hub_height=100)
+            onshore_cf = wind_capacity_factor(ws_hub, WIND_PARAMS['onshore']).mean()
+            offshore_cf = wind_capacity_factor(ws_hub, WIND_PARAMS['offshore']).mean()
+            
+            # Solar CF
+            solar_data = ds_solar[solar_data_var].isel({time_dim: i}).values
+            if solar_data.ndim > 1:
+                solar_data = solar_data.flatten()
+            solar_data = solar_data[germany_mask]
+            
+            if use_tsr:
+                # TSR is in J/m² per 3h, convert to W/m² average
+                irradiance = solar_data / (3 * 3600)  # W/m²
+                solar_cf = np.clip(irradiance / 1000, 0, 1).mean()
+            else:
+                # Use cloud cover (0-1, where 1 = full cloud)
+                solar_cf = solar_capacity_factor_from_cloud(solar_data, timestep_hours=3).mean()
+            
+            # Combined CF
+            combined_cf = (
+                CAPACITY_WEIGHTS['solar'] * solar_cf +
+                CAPACITY_WEIGHTS['onshore_wind'] * onshore_cf +
+                CAPACITY_WEIGHTS['offshore_wind'] * offshore_cf
+            )
+            
+            results.append({
+                'time': pd.Timestamp(t),
+                'solar_cf': solar_cf,
+                'onshore_wind_cf': onshore_cf,
+                'offshore_wind_cf': offshore_cf,
+                'combined_cf': combined_cf
+            })
+        
+        # Close datasets
+        ds_u10.close()
+        ds_v10.close()
+        ds_solar.close()
+        
+        print(f"    Processed {len(results)} timesteps so far")
+    
+    return pd.DataFrame(results).set_index('time').sort_index()
+
+
 # ============================================================================
 # DUNKELFLAUTE DETECTION
 # ============================================================================
@@ -539,7 +709,7 @@ def compute_annual_statistics(df, events):
 # MAIN ANALYSIS
 # ============================================================================
 
-def analyze_year(year, save_results=True, output_dir=None):
+def analyze_year(year, save_results=True, output_dir=None, data_source='era5', scenario='1950C'):
     """
     Run full dunkelflaute analysis for a single year.
     
@@ -547,15 +717,21 @@ def analyze_year(year, save_results=True, output_dir=None):
         year: Year to analyze
         save_results: Whether to save results to CSV
         output_dir: Directory for output files
+        data_source: 'era5' or 'tco1279'
+        scenario: TCo1279 scenario ('1950C' or '2080C')
     
     Returns:
         events: List of detected events
         stats: Annual statistics dictionary
         df: Full time series DataFrame
     """
+    source_name = "ERA5" if data_source == 'era5' else f"TCo1279-DART-{scenario}"
+    timestep_hours = 1 if data_source == 'era5' else 3
+    
     print(f"\n{'='*60}")
     print(f"Dunkelflaute Analysis for Germany - {year}")
     print(f"{'='*60}")
+    print(f"Data source: {source_name}")
     print(f"Method: {DUNKELFLAUTE_PARAMS['moving_avg_hours']}h moving average")
     print(f"Threshold: CF < {DUNKELFLAUTE_PARAMS['threshold']}")
     print(f"Capacity weights: Solar {CAPACITY_WEIGHTS['solar']*100:.1f}%, "
@@ -564,8 +740,11 @@ def analyze_year(year, save_results=True, output_dir=None):
     print()
     
     # Load data
-    print("Loading ERA5 data...")
-    df = load_era5_data_efficient(year)
+    print(f"Loading {source_name} data...")
+    if data_source == 'era5':
+        df = load_era5_data_efficient(year)
+    else:
+        df = load_tco1279_data(year, scenario=scenario)
     print(f"  Loaded {len(df)} timesteps")
     
     # Detect events
@@ -575,7 +754,7 @@ def analyze_year(year, save_results=True, output_dir=None):
         moving_avg_hours=DUNKELFLAUTE_PARAMS['moving_avg_hours'],
         threshold=DUNKELFLAUTE_PARAMS['threshold'],
         min_duration_hours=DUNKELFLAUTE_PARAMS['min_duration_hours'],
-        timestep_hours=1  # ERA5 is hourly
+        timestep_hours=timestep_hours
     )
     
     # Statistics
@@ -617,7 +796,7 @@ def analyze_year(year, save_results=True, output_dir=None):
     return events, stats, df
 
 
-def analyze_multi_year(start_year, end_year, output_dir=None):
+def analyze_multi_year(start_year, end_year, output_dir=None, data_source='era5', scenario='1950C'):
     """
     Run dunkelflaute analysis for multiple years.
     
@@ -625,6 +804,8 @@ def analyze_multi_year(start_year, end_year, output_dir=None):
         start_year: First year
         end_year: Last year (inclusive)
         output_dir: Directory for output files
+        data_source: 'era5' or 'tco1279'
+        scenario: TCo1279 scenario ('1950C' or '2080C')
     
     Returns:
         all_events: List of all events across years
@@ -635,7 +816,8 @@ def analyze_multi_year(start_year, end_year, output_dir=None):
     
     for year in range(start_year, end_year + 1):
         try:
-            events, stats, _ = analyze_year(year, save_results=True, output_dir=output_dir)
+            events, stats, _ = analyze_year(year, save_results=True, output_dir=output_dir,
+                                           data_source=data_source, scenario=scenario)
             annual_stats[year] = stats
             for evt in events:
                 evt['year'] = year
@@ -697,13 +879,15 @@ def analyze_multi_year(start_year, end_year, output_dir=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Compute Dunkelflaute events for Germany using ERA5 data',
+        description='Compute Dunkelflaute events for Germany using ERA5 or TCo1279-DART data',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --year 1997                    # Analyze single year
-  %(prog)s --start 1979 --end 2024        # Analyze multiple years
-  %(prog)s --year 1997 --threshold 0.10   # Use different threshold
+  %(prog)s --year 1997                         # Analyze single year (ERA5)
+  %(prog)s --start 1979 --end 2024             # Analyze multiple years (ERA5)
+  %(prog)s --year 1997 --threshold 0.10        # Use different threshold
+  %(prog)s --source tco1279 --year 1968        # Use TCo1279-DART data
+  %(prog)s --source tco1279 --scenario 2080C   # Use 2080C scenario
         """
     )
     
@@ -717,6 +901,10 @@ Examples:
     parser.add_argument('--output-dir', type=str, 
                         default='/work/ab0246/a270092/software/GlobalLab_hackathon_2025/dunkelflaute_results',
                         help='Output directory for results')
+    parser.add_argument('--source', type=str, choices=['era5', 'tco1279'], default='era5',
+                        help='Data source: era5 or tco1279 (default: era5)')
+    parser.add_argument('--scenario', type=str, choices=['1950C', '2080C'], default='1950C',
+                        help='TCo1279-DART scenario (default: 1950C)')
     
     args = parser.parse_args()
     
@@ -726,9 +914,11 @@ Examples:
     
     # Run analysis
     if args.year:
-        analyze_year(args.year, save_results=True, output_dir=args.output_dir)
+        analyze_year(args.year, save_results=True, output_dir=args.output_dir,
+                    data_source=args.source, scenario=args.scenario)
     elif args.start and args.end:
-        analyze_multi_year(args.start, args.end, output_dir=args.output_dir)
+        analyze_multi_year(args.start, args.end, output_dir=args.output_dir,
+                          data_source=args.source, scenario=args.scenario)
     else:
         parser.print_help()
         print("\nError: Must specify either --year or both --start and --end")
